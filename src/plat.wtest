@@ -1,0 +1,8 @@
+import plat.*
+
+// auto-generated at 31/08/2022 11:36:33
+test "exported test from REPL session" {
+	
+	player_hit.cargar()
+	
+}

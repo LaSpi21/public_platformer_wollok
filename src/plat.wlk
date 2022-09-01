@@ -1,15 +1,20 @@
 import wollok.game.*
+import teletransportadores.*
 
 const velocidad = 250
 
 object juego {
 
-	const objetos = [ suelo, vida, player, reloj, espada, slime]
+
+    
+    const property tamanho = 40
+    
+	const objetos = [ vida, player, reloj, espada, slime]
 
 	method configurar() {
-		game.width(105)
-		game.height(70)
-		game.cellSize(5)
+		game.width(tamanho)
+		game.height(tamanho)
+		game.cellSize(12)
 		game.title("platformero")
 		objetos.forEach({ unObjeto => game.addVisual(unObjeto)})
 		keyboard.space().onPressDo{ self.saltar()}
@@ -22,8 +27,9 @@ object juego {
 		keyboard.p().onPressDo{ player.mostrarPosicion()} // MOTIVOS DE PRUEBAS
 		keyboard.k().onPressDo{ player.bajarSalud(1)} // MOTIVOS DE PRUEBAS
 		keyboard.l().onPressDo{ player.subirSalud(1)} // MOTIVOS DE PRUEBAS
-		game.onCollideDo(player, { obstaculo => obstaculo.chocar()})
-	// game.onCollideDo(espada, { obstaculo => obstaculo.obtenerEspada()})
+		//keyboard.x().onPressDo{ player.grounded2()} // MOTIVOS DE PRUEBAS
+		
+
 	}
 
 	method iniciar() {
@@ -31,6 +37,13 @@ object juego {
 		reloj.iniciar()
 		vida.iniciar()
 		slime.iniciar()
+		
+	}
+	
+	
+	method colisiones(){
+		player.hitbox().forEach({x => game.onCollideDo(x, { obstaculo => obstaculo.chocar()})})
+		
 	}
 
 	method saltar() {
@@ -39,12 +52,9 @@ object juego {
 	}
 
 	method reiniciar() {
-		if (!player.estaVivo()) {
-			game.removeVisual(gameOver)
-			self.iniciar()
-		} else {
-		}
-	}
+
+			self.iniciar()}  //esto deberia cerrar todo antes de iniciar de nuevo
+
 
 	method caminar(direccion) {
 		if (player.estaVivo()) player.caminar(direccion) else {
@@ -75,7 +85,7 @@ object vida {
 		return imagenes.get(player.salud())
 	}
 
-	method position() = game.at(5, game.height() - 8)
+	method position() = game.at(1, juego.tamanho()*(9/10))
 
 	method iniciar() {
 		player.todaLaVida()
@@ -84,20 +94,23 @@ object vida {
 }
 
 object reloj {
-
+	var property segundo = 500
 	var tiempo = 100
 
-	method text() = tiempo.toString()
+	method text() = tiempo.roundUp().toString()
 
-	method position() = game.at(50, game.height() - 10)
+	method position() = game.at(juego.tamanho()/2, game.height() - juego.tamanho()/10)
 
 	method pasarTiempo() {
-		tiempo = tiempo - 1
+		tiempo = tiempo - segundo/3000
+		player.caer()
+		//game.onTick(250 / 3, "gravity", { self.caer()})
 	}
 
 	method iniciar() {
 		tiempo = 100
-		game.onTick(1000, "tiempo", { self.pasarTiempo()})
+		
+		game.onTick(segundo / 3, "tiempo", { self.pasarTiempo()})
 	}
 
 	method detener() {
@@ -110,22 +123,14 @@ object reloj {
 
 }
 
-object suelo {
-
-
-	method position() = game.origin().up(1)
-
-	method image() = "suelo.png"
-	
-	method chocar(){}
-
-}
 
 object espada {
 
 	var property image = "sword11.png"
-	var property position = game.at(30, 1)
+	var property position = game.at(20, (2/5)*juego.tamanho()+3)
 
+	method esSuelo() = false
+	
 	method chocar() {
 		console.println("espada")
 		game.removeVisual(self)
@@ -139,7 +144,7 @@ object espada {
 object iconoEspada {
 
 	var property image = "sword.png"
-	var property position = game.at(5, game.height() - 12)
+	var property position = game.at(1, juego.tamanho()*(9/10)-2)
 
 }
 
@@ -148,7 +153,7 @@ object player {
 	var vivo = true
 	var property salud = 6
 	// var position = game.at(1, suelo.position().y())
-	var position = game.at(1, 20)
+	var property position = self.posicionInicial()
 	var property anim_time = 125
 	var property image = 0
 	var property mov = false
@@ -160,6 +165,8 @@ object player {
 	var property espada = false
 	var property att_combo = false
 	var armadura = 1
+	const property hitbox = []
+	var property vulnerable = true
 	
 	// ANIMACIONES
 	const salto_right = [ "tile069.png", "tile070.png", "tile071.png" ]
@@ -199,6 +206,8 @@ object player {
 		return sprites.get(image)
 	}
 
+	method posicionInicial() = game.at(juego.tamanho()-5, (2/5)*juego.tamanho()+3)
+	
 	method aplicarAnimate() {
 		game.onTick(anim_time, "anima", { self.Animate()})
 	}
@@ -219,7 +228,26 @@ object player {
 		}
 	}
 
-	method grounded() = position.y() == suelo.position().y()
+
+	method grounded() {
+		if (self.position().y() == -4){
+			self.transportar(self.posicionInicial())
+			self.bajarSalud(1)
+		}
+		
+		const objAbajo = game.getObjectsIn(game.at(self.position().x()+4, self.position().y()-1))
+		if (objAbajo.size() > 0){
+		return objAbajo.get(0).esSuelo()
+		}
+		else{
+			return false
+		}
+		
+	}
+	
+	//console.println(game.getObjectsIn(game.at(self.position().x(), self.position().y()-1)).get(0).esSuelo())
+		//return game.getObjectsIn(game.at(self.position().x(), self.position().y()-1))}
+	// game.getObjectsIn(game.at(self.position().x(), self.position().y()-1)).esSuelo()
 
 	method saltar() {
 		if (self.grounded()) {
@@ -227,7 +255,7 @@ object player {
 			saltando = true
 			self.animSaltar(miraDerecha)
 			self.subir()
-			4.times({ i => game.schedule(125 * (i / 2), { self.subir()})})
+			2.times({ i => game.schedule(250 * i/3, { self.subir()})})
 			game.schedule(375, { self.saltando(false)})
 		}
 	}
@@ -244,11 +272,10 @@ object player {
 	}
 
 	method subir() {
-		position = position.up(2)
+		position = position.up(1)
+		hitbox.forEach({unHitbox => unHitbox.position(unHitbox.position().up(1))})
 	}
 
-	method subir(x) {
-	} // METODO SUBIR ALTERNATIVO PARA ARMAR DESPUES CON (1..x) para hacer subir de distitntos altos
 
 	method caer() {
 		if (!self.grounded() and !saltando) {
@@ -257,6 +284,7 @@ object player {
 			}
 			cayendo = true
 			position = position.down(1)
+			hitbox.forEach({unHitbox => unHitbox.position(unHitbox.position().down(1))})
 		}
 		if (self.grounded() and cayendo) {
 			cayendo = false
@@ -288,13 +316,13 @@ object player {
 			self.animCaminar(direccion)
 			mov = true
 			self.mover(direccion)
-			9.times({ i => game.schedule(500 * (i / 9), { self.mover(direccion)})}) // TODO 18 hace que se buggeeee todo
+			(juego.tamanho()/10).times({ i => game.schedule(500 * (i / 7), { self.mover(direccion)})}) // TODO 18 hace que se buggeeee todo
 			game.schedule(500, { self.animIdle()})
 		} else if (!mov) {
 			mov = true
 			self.animCaer(direccion)
 			self.mover(direccion)
-			9.times({ i => game.schedule(500 * (i / 9), { self.mover(direccion)})})
+			(juego.tamanho()/10).times({ i => game.schedule(500 * (i / 7), { self.mover(direccion)})})
 			game.schedule(500, { self.mov(false)})
 		}
 	}
@@ -346,37 +374,29 @@ object player {
 			mov = true
 			atacando = true
 			self.animAtacar1() // A esta funcion le falta la parte donde invoca el objeto ataque...
-			2.times({ i => game.schedule(350 * (i / 2), { self.mover(miraDerecha)})})
+			//2.times({ i => game.schedule(350 * (i / 2), { self.mover(miraDerecha)})})
 			game.schedule(300, { self.ataque1(true)})
 			game.schedule(600, { self.mov(false)})
-			game.schedule(575, { self.atacando(false)}) // NECESITO PODER ABORTAR ESTO PARA QUE FUNCIONE!!
+			game.schedule(550, { self.atacando(false)}) // NECESITO PODER ABORTAR ESTO PARA QUE FUNCIONE!!
 			game.schedule(575, { self.ataque1(false)})
 			game.schedule(600, { self.animIdle()}) // NECESITO PODER ABORTAR ESTO PARA QUE FUNCIONE!!
 			
 		}
-	/*	//ESTO NO VIENE FUNCIONANDO BIEN..
-	 * else if (espada){
-	 * 	console.println("att_aire")
-	 * 	mov = true
-	 * 	self.animAtacar()
-	 * 	game.schedule(450, { self.mov(false)})
-	 * 	game.schedule(450, { self.animIdle()})
-	 * 	}
-	 */
-	}
+}
 
 	method atacar2() {
 		if (ataque1) {
 			console.println("att2")
 			mov = true
+			ataque1 = false
 			atacando = true
 			att_combo = true
 			self.animAtacar2() // A esta funcion le falta la parte donde invoca el objeto ataque...
-			2.times({ i => game.schedule(350 * (i / 2), { self.mover(miraDerecha)})})
+			1.times({ i => game.schedule(350 * (i / 2), { self.mover(miraDerecha)})})
 			
 			game.schedule(350, { self.ataque2(true)})
 			game.schedule(600, { self.mov(false)})
-			game.schedule(575, { self.atacando(false)}) // NECESITO PODER ABORTAR ESTO PARA QUE FUNCIONE!!
+			game.schedule(550, { self.atacando(false)}) // NECESITO PODER ABORTAR ESTO PARA QUE FUNCIONE!!
 			game.schedule(575, { self.ataque2(false)})
 			game.schedule(325, { self.att_combo(false)})
 			game.schedule(600, { self.animIdle()})
@@ -388,13 +408,15 @@ object player {
 		if (ataque2) {
 			console.println("att3")
 			mov = true
+			ataque2 = false //sacar si se quiere un combo mas buggeado pero copado
 			atacando = true
 			att_combo = true
 			self.animAtacar3() // A esta funcion le falta la parte donde invoca el objeto ataque...
-			2.times({ i => game.schedule(350 * (i / 2), { self.mover(miraDerecha)})})
-			game.schedule(600, { self.mov(false)})
+			//2.times({ i => game.schedule(150 * (i / 2), { self.mover(miraDerecha)})})
+			8.times({ i => game.schedule(150 + 200 * (i / 10), { self.mover(miraDerecha)})})
+			game.schedule(550, { self.mov(false)})
 			game.schedule(400, { self.att_combo(false)})
-			game.schedule(575, { self.atacando(false)})
+			game.schedule(550, { self.atacando(false)})
 			game.schedule(600, { self.animIdle()})
 		}
 	}
@@ -419,12 +441,21 @@ object player {
 		}
 	}
 	
+	method transportar(pos){
+		const diffX = pos.x() - position.x()
+		const diffY = pos.y() - position.y()
+		hitbox.forEach({unHitbox => unHitbox.position(unHitbox.position().right(diffX).up(diffY))})
+		position = pos
+		
+	}
 
 	method mover(direccion) {
 		if (direccion) { // TODO
 			position = position.right(1)
+			hitbox.forEach({unHitbox => unHitbox.position(unHitbox.position().right(1))})
 		} else {
 			position = position.left(1)
+			hitbox.forEach({unHitbox => unHitbox.position(unHitbox.position().left(1))})
 		}
 	}
 
@@ -437,7 +468,8 @@ object player {
 
 	method iniciar() {
 		sprites = idle_right
-		game.onTick(125 / 4, "gravity", { self.caer()})
+		//game.onTick(250 / 3, "gravity", { self.caer()})
+		
 		self.aplicarAnimate()
 		vivo = true
 	}
@@ -467,15 +499,37 @@ object slime{
 	var property sprites = slime_mov
 	var image = 0
 	var anim_time = 100
-	var property position = self.posicionInicial()
+	var property position = game.at(25, (2/5)*juego.tamanho()+3)
 	var direccion = true
+	
 	
 	method image() {
 		return sprites.get(image)
 	}
 	
-	method posicionInicial() = game.at(40, 0)
+	method esSuelo() = false
 
+	method chocar_deprecated(){
+		
+		
+		if (player.vulnerable()){
+			player.vulnerable(false)
+			player.mov(true)
+			4.times({ i => game.schedule(45 * (1.6**i), { player.mover(!direccion)})})
+			game.schedule(300, {player.vulnerable(true)})
+			game.schedule(300, {player.mov(false)})
+
+		
+		player.bajarSalud(2)}
+	}
+	
+	method chocar(){
+		player.transportar(player.posicionInicial())
+		//player.bajarSalud(2)
+		game.say(player, ["¡Auch!", "Otra vez al comienzo..", "ouch...", "aaAaH!!!"].anyOne())
+	}
+	
+	
 	method Animate() {
 		if (image < sprites.size() - 1) {
 			image += 1
@@ -483,6 +537,8 @@ object slime{
 			image = 0
 		}
 	}
+	
+	
 	
 	method aplicarAnimate() {
 		game.onTick(anim_time, "slime_anima", { self.Animate()})
@@ -501,17 +557,97 @@ object slime{
 		else{
 			position = position.right(1)
 		}
-		if (position.x() <= 20){
+		if (position.x() <= 15){
 			direccion = false
 		}
-		else if (position.x() >= 60){
+		else if (position.x() >= 35){
 			direccion = true
 		}
 			
 	}
-	
 
-		
-		
 	
 }
+
+
+class Plataforma {
+	
+	var property position
+	
+	
+	method esSuelo() = true
+	method image() = "muro12.png"
+	method chocar(){}
+}
+
+
+object nivel1 {
+
+	method cargar() {
+//	PAREDES
+		const ancho = game.width()
+		const alto = game.height()
+		const posParedes = []
+		(1 .. ancho*(2/15)).forEach{ n => posParedes.add(new Position(x = n, y = 0))}
+		(ancho*(41/50) .. ancho-2).forEach{ n => posParedes.add(new Position(x = n, y = 0))} 
+		(ancho*(1/10) .. ancho-1).forEach{ n => posParedes.add(new Position(x = n, y = (2/5)*alto+2))} 
+		(ancho*(5/10) .. ancho-1).forEach{ n => posParedes.add(new Position(x = n, y = (3/5)*alto+3))} 
+		(0 .. ancho*(3/10)).forEach{ n => posParedes.add(new Position(x = n, y = (7/10)*alto))} 
+		(ancho*(2/10) .. ancho*(17/50)).forEach{ n => posParedes.add(new Position(x = n, y = (1/5)*alto+1))} 
+		(ancho*(22/50) .. ancho*(5/10)).forEach{ n => posParedes.add(new Position(x = n, y = (1/5)*alto+1))} 
+		(ancho*(33/50) .. ancho*(37/50)).forEach{ n => posParedes.add(new Position(x = n, y = (1/5)*alto+1))} 
+		(ancho*(34/50) .. ancho+2).forEach{ n => posParedes.add(new Position(x = n, y = (4/5)*alto+4))} 
+		//(0 .. largo).forEach{ n => posParedes.add(new Position(x = 0, y = n))} // bordeIzq 
+		//(0 .. largo).forEach{ n => posParedes.add(new Position(x = ancho, y = n))} // bordeDer
+			// posParedes.addAll([new Position(x=3,y=5), new Position(x=4,y=5), new Position(x=5,y=5)])
+			// posParedes.addAll([new Position(x=1,y=2), new Position(x=2,y=2),new Position(x=6,y=2), new Position(x=7,y=2)])
+			// posParedes.addAll([new Position(x=1,y=1), new Position(x=2,y=1),new Position(x=6,y=1), new Position(x=7,y=1)])
+		posParedes.forEach{ p => self.dibujar(new Plataforma(position = p))}
+	}
+
+	method dibujar(dibujo) {
+		game.addVisual(dibujo)
+		return dibujo
+	}
+		}
+		
+
+class Player_hitbox {
+	
+	var property position
+	
+	
+	method image() = "sword2.png"
+	method chocar(){}
+	
+
+	
+}
+
+object player_hit {
+
+	method cargar() {
+//	HITBOX
+		const ancho = 2
+		//const alto = 3
+		const posParedes = []
+		(0 .. ancho).forEach{ n => posParedes.add(new Position(x = player.position().x() + 2 + n, y = player.position().y()))} // bordeAbajo
+		//(0 .. ancho).forEach{ n => posParedes.add(new Position(x = player.position().x() + 3 + 20*n, y = player.position().y()+alto))} // bordeArriba 
+		//(0 .. alto).forEach{ n => posParedes.add(new Position(x = player.position().x() + 3, y = player.position().y() + 2*n))} // bordeIzq 
+		//(0 .. alto).forEach{ n => posParedes.add(new Position(x = player.position().x() + 3 +ancho, y = player.position().y() + 2*n))} // bordeDer
+			// posParedes.addAll([new Position(x=3,y=5), new Position(x=4,y=5), new Position(x=5,y=5)])
+			// posParedes.addAll([new Position(x=1,y=2), new Position(x=2,y=2),new Position(x=6,y=2), new Position(x=7,y=2)])
+			// posParedes.addAll([new Position(x=1,y=1), new Position(x=2,y=1),new Position(x=6,y=1), new Position(x=7,y=1)])
+		posParedes.forEach{ p => self.dibujar(new Player_hitbox(position = p))}
+	}
+
+	method dibujar(dibujo) {
+		game.addVisual(dibujo)
+		player.hitbox().add(dibujo)
+		return dibujo
+		
+	
+	}
+		}
+
+

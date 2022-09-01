@@ -5,6 +5,11 @@ program plat {
 
 	juego.configurar()
 	juego.iniciar()
+	
+	nivel1.cargar() //
+	player_hit.cargar()
+	juego.colisiones()
+	
 	game.start()
 
 }
