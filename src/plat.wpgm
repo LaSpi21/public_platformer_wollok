@@ -1,5 +1,13 @@
 import wollok.game.*
-import plat.* 
+import juego.*
+import player.*
+import HUD.*
+import espada.*
+import slime.*
+import plataformas.* 
+import moneda.*
+import teletransportadores.*
+import puerta.*
 
 program plat {
 
