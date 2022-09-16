@@ -77,16 +77,22 @@ object player {
 		}
 	}
 
+	method caerAlPozo() {
+		self.transportar(self.posicionInicial())
+		self.bajarSalud(1)
+	}
+
 	method grounded() {
 		if (self.position().y() == -4) {
-			self.transportar(self.posicionInicial())
-			self.bajarSalud(1)
-		}
-		const objAbajo = game.getObjectsIn(game.at(self.position().x() + 4, self.position().y() - 1))
-		if (objAbajo.size() > 0) {
-			return objAbajo.get(0).esSuelo()
-		} else {
+			self.caerAlPozo()
 			return false
+		} else {
+			const objAbajo = game.getObjectsIn(game.at(self.position().x() + 4, self.position().y() - 1))
+			if (objAbajo.size() > 0) {
+				return objAbajo.get(0).esSuelo()
+			} else {
+				return false
+			}
 		}
 	}
 
@@ -129,10 +135,14 @@ object player {
 			position = position.down(1)
 			hitbox.forEach({ unHitbox => unHitbox.position(unHitbox.position().down(1))})
 		}
-		if (self.grounded() and cayendo) {
-			cayendo = false
-			self.animIdle()
+		else if (self.grounded() and cayendo) {
+			self.aterrizar()
 		}
+	}
+
+	method aterrizar() {
+		cayendo = false
+		self.animIdle()
 	}
 
 	method animIdle() {
@@ -329,12 +339,12 @@ object player {
 			game.schedule(500, { game.say(self, "Game Over")})
 				// game.removeTickEvent("gravity")
 				// juego.tickEvents().remove("gravity")
-			game.schedule(500, {juego.terminar()})
+			game.schedule(500, { juego.terminar()})
 			game.schedule(1000, { game.say(self, "Apreta R para reiniciar")})
 			vivo = false
 		}
 	}
-	
+
 	method detener() {
 		if (vivo) {
 			game.removeTickEvent("anima")
@@ -347,7 +357,7 @@ object player {
 	// game.removeTickEvent("gravity")
 	// juego.tickEvents().remove("gravity")
 	}
-	
+
 	method morir() {
 		game.removeTickEvent("anima")
 		juego.tickEvents().remove("anima")
