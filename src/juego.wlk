@@ -1,5 +1,4 @@
 import wollok.game.*
-import juego.*
 import player.*
 import HUD.*
 import espada.*
@@ -11,10 +10,10 @@ import puerta.*
 
 object juego {
 
-	const property tamanho = 45
-	const objetos = [ vida, reloj, espada, slime1, slime2, slime3, moneda0, moneda1, moneda2, moneda3, moneda4, moneda5, tp1, r1, tp2, r2, tp3, r3, tp4, r4, ataque, contadorMonedas, puerta, player]
+	const property tamanho = 40
+	const objetos = [ vida, reloj, espada, slime1, slime2, slime3, monedaHUD, moneda1, moneda2, moneda3, moneda4, moneda5, tp1, r1, tp2, r2, tp3, r3, tp4, r4, ataque, contadorMonedas, puerta, player]
 	const animables = [player, reloj, vida, slime1, slime2, slime3, iconoEspada] 
-	const reInstanciables = [slime1, slime2, slime3, moneda0, moneda1, moneda2, moneda3, moneda4, moneda5, espada]
+	const reInstanciables = [slime1, slime2, slime3, moneda1, moneda2, moneda3, moneda4, moneda5, espada]
 	const property tickEvents = []
 	const property visuals = []
 	var property monedas = 0

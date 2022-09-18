@@ -1,20 +1,16 @@
-
 import wollok.game.*
 import juego.*
 import player.*
+import obtenibles.*
 
-class HealPack{
-	
-	var property position
-	var property image = "heal.png"
-	
-	method chocar(){
+class HealPack inherits Obtenibles {
+
+	override method image() = "heal.png"
+
+	override method chocar() {
 		player.subirSalud(1)
-		game.removeVisual(self)
-		juego.visuals().remove(self)
+		super()
 	}
-	
-	method serAtacado(x){}
-	
-	method esSuelo() = false
+
 }
+

@@ -53,7 +53,7 @@ object player {
 		return sprites.get(image)
 	}
 
-	method posicionInicial() = game.at(1, 1)
+	method posicionInicial() = game.at(1, 3)
 
 	method aplicarAnimate() {
 		game.onTick(anim_time, "anima", { self.Animate()})
@@ -169,13 +169,13 @@ object player {
 			self.animCaminar(direccion)
 			mov = true
 			self.mover(direccion)
-			5.times({ i => game.schedule(500 * (i / 7), { self.mover(direccion)})}) // TODO 18 hace que se buggeeee todo
+			4.times({ i => game.schedule(500 * (i / 4), { self.mover(direccion)})}) // TODO 18 hace que se buggeeee todo
 			game.schedule(500, { self.animIdle()})
 		} else if (!mov) {
 			mov = true
 			self.animCaer(direccion)
 			self.mover(direccion)
-			3.times({ i => game.schedule(500 * (i / 3), { self.mover(direccion)})})
+			2.times({ i => game.schedule(500 * (i / 2), { self.mover(direccion)})})
 			game.schedule(500, { self.mov(false)})
 		}
 	}

@@ -18,23 +18,35 @@ object vida {
 		return imagenes.get(player.salud())
 	}
 
-	method position() = game.at(1, juego.tamanho() * (9 / 10) + 2)
+	method position() = game.at(1, juego.tamanho() * (9 / 10) + 1)
 
 	method iniciar() {
-		console.println("iniciar vida")
+
 		player.todaLaVida()
-		console.println("inicio vida")
+
 	}
-	
-	method detener(){}
+
+	method detener() {
+	}
 
 }
 
-object contadorMonedas{
+object monedaHUD {
+
+	method image() = "coinPequenha.png"
 	
+	method position() = game.at(1, juego.tamanho() * (9 / 10) - 1)
+	
+	
+
+}
+
+object contadorMonedas {
+
 	method text() = juego.monedas().toString() + "/ 6"
-	
+
 	method position() = game.at(2, juego.tamanho() * (9 / 10) - 3)
+
 }
 
 object reloj {
@@ -48,7 +60,9 @@ object reloj {
 
 	method pasarTiempo() {
 		tiempo = tiempo - segundo / 2000
-		if (tiempo < 0){player.morir()}
+		if (tiempo < 0) {
+			player.morir()
+		}
 		player.caer()
 	// game.onTick(250 / 3, "gravity", { self.caer()})
 	}
@@ -60,10 +74,10 @@ object reloj {
 	}
 
 	method detener() {
-		if (juego.tickEvents().contains("tiempo")){
-			
-		game.removeTickEvent("tiempo")
-		juego.tickEvents().remove("tiempo")}
+		if (juego.tickEvents().contains("tiempo")) {
+			game.removeTickEvent("tiempo")
+			juego.tickEvents().remove("tiempo")
+		}
 	}
 
 	method reinciar() {
@@ -77,11 +91,13 @@ object iconoEspada {
 
 	var property image = "sword11.png"
 	var property position = game.at(6, juego.tamanho() * (9 / 10) - 1)
-	
-	method iniciar(){}
-	
-	method detener(){
+
+	method iniciar() {
+	}
+
+	method detener() {
 		game.removeVisual(self)
 	}
 
 }
+
