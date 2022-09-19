@@ -8,13 +8,16 @@ import plataformas.*
 import moneda.*
 import teletransportadores.*
 import puerta.*
+import niveles.*
+
 
 program plat {
 
 	juego.configurar()
-	juego.iniciar()
 	
-	nivel1.cargar() //
+	
+	selectorNiveles.listaNiveles().get(juego.nivel()).cargar()
+	juego.iniciar()
 	player_hit.cargar()
 	juego.colisiones()
 	

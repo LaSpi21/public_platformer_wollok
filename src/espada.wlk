@@ -4,8 +4,7 @@ import HUD.*
 import juego.*
 import obtenibles.*
 
-object espada inherits Obtenibles(position = game.at(juego.tamanho() * (41 / 50), (4 / 5) * juego.tamanho() + 1)){
-	
+class Espada inherits Obtenibles{
 	
 	override method image() = "sword11.png"
 	
@@ -29,13 +28,22 @@ object espada inherits Obtenibles(position = game.at(juego.tamanho() * (41 / 50)
 		}
 		console.println("reinicio espada")
 	}
-
 }
+
+
+
+
+
+	
+	
+
+
+
 
 object ataque {
 
 	var property position = game.at(0, 0)
-	var property image = "sword11.png"
+	var property image = "pixel.png"
 	var property danho = 0
 
 	method mover(direccion) {

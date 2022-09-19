@@ -53,7 +53,7 @@ object player {
 		return sprites.get(image)
 	}
 
-	method posicionInicial() = game.at(1, 3)
+	method posicionInicial() = game.at(1, 2)
 
 	method aplicarAnimate() {
 		game.onTick(anim_time, "anima", { self.Animate()})
@@ -105,8 +105,8 @@ object player {
 			saltando = true
 			self.animSaltar(miraDerecha)
 			self.subir()
-			2.times({ i => game.schedule(250 * i / 3, { self.subir()})})
-			game.schedule(375, { self.saltando(false)})
+			2.times{i => game.schedule(i*150, { self.subir()})}
+			game.schedule(350, { self.saltando(false)})
 		}
 	}
 
@@ -150,15 +150,15 @@ object player {
 		if (!atacando) {
 			if (tieneEspada) {
 				if (miraDerecha) { // TODO
-					self.cambiarAnimate(idle_espada_right, 250)
+					self.cambiarAnimate(idle_espada_right, 500)
 				} else {
-					self.cambiarAnimate(idle_espada_left, 250)
+					self.cambiarAnimate(idle_espada_left, 500)
 				}
 			} else {
 				if (miraDerecha) { // TODO
-					self.cambiarAnimate(idle_right, 250)
+					self.cambiarAnimate(idle_right, 500)
 				} else {
-					self.cambiarAnimate(idle_left, 250)
+					self.cambiarAnimate(idle_left, 500)
 				}
 			}
 		}
@@ -169,8 +169,8 @@ object player {
 			self.animCaminar(direccion)
 			mov = true
 			self.mover(direccion)
-			4.times({ i => game.schedule(500 * (i / 4), { self.mover(direccion)})}) // TODO 18 hace que se buggeeee todo
-			game.schedule(500, { self.animIdle()})
+			3.times({ i => game.schedule(400 * (i / 3), { self.mover(direccion)})}) // TODO 18 hace que se buggeeee todo
+			game.schedule(400, { self.animIdle()})
 		} else if (!mov) {
 			mov = true
 			self.animCaer(direccion)
@@ -182,10 +182,10 @@ object player {
 
 	method animCaminar(direccion) {
 		if (direccion) { // TODO
-			self.cambiarAnimate(walk_right, 175)
+			self.cambiarAnimate(walk_right, 200)
 			miraDerecha = true
 		} else {
-			self.cambiarAnimate(walk_left, 175)
+			self.cambiarAnimate(walk_left, 200)
 			miraDerecha = false
 		}
 	}
@@ -225,15 +225,15 @@ object player {
 	method animAtacar3() {
 		if (miraDerecha) {
 			self.cambiarAnimate(att3_right, 75)
-			game.schedule(150, { ataque.position(self.position().right(3))})
+			game.schedule(75, { ataque.position(self.position().right(3))})
 			ataque.danho(5)
-			12.times({ i => game.schedule(150 + 150 * (i / 12), { ataque.mover(false)})})
+			10.times({ i => game.schedule(75 + 150 * (i / 10), { ataque.mover(false)})})
 			game.schedule(375, { ataque.position(game.at(juego.tamanho(), juego.tamanho()))})
 		} else {
 			self.cambiarAnimate(att3_left, 75)
-			game.schedule(150, { ataque.position(self.position().right(2))})
+			game.schedule(75, { ataque.position(self.position().right(2))})
 			ataque.danho(5)
-			12.times({ i => game.schedule(150 + 150 * (i / 12), { ataque.mover(true)})})
+			10.times({ i => game.schedule(75 + 150 * (i / 10), { ataque.mover(true)})})
 			game.schedule(375, { ataque.position(game.at(juego.tamanho(), juego.tamanho()))})
 		}
 	}
@@ -286,7 +286,7 @@ object player {
 			att_combo = true
 			self.animAtacar3()
 				// 2.times({ i => game.schedule(150 * (i / 2), { self.mover(miraDerecha)})})
-			8.times({ i => game.schedule(150 + 200 * (i / 10), { self.mover(miraDerecha)})})
+			6.times({ i => game.schedule(150 + 200 * (i / 8), { self.mover(miraDerecha)})})
 			game.schedule(550, { self.mov(false)})
 			game.schedule(400, { self.att_combo(false)})
 			game.schedule(550, { self.atacando(false)})
@@ -331,19 +331,7 @@ object player {
 		}
 	}
 
-	method detener2() {
-		if (vivo) {
-			self.animMorir(miraDerecha)
-			game.schedule(500, { game.removeTickEvent("anima")})
-			game.schedule(500, { juego.tickEvents().remove("anima")})
-			game.schedule(500, { game.say(self, "Game Over")})
-				// game.removeTickEvent("gravity")
-				// juego.tickEvents().remove("gravity")
-			game.schedule(500, { juego.terminar()})
-			game.schedule(1000, { game.say(self, "Apreta R para reiniciar")})
-			vivo = false
-		}
-	}
+
 
 	method detener() {
 		if (vivo) {
@@ -354,29 +342,48 @@ object player {
 			game.removeTickEvent("tiempo")
 			juego.tickEvents().remove("tiempo")
 		}
-	// game.removeTickEvent("gravity")
-	// juego.tickEvents().remove("gravity")
+
 	}
 
 	method morir() {
-		game.removeTickEvent("anima")
-		juego.tickEvents().remove("anima")
-			// game.removeTickEvent("gravity")
-			// juego.tickEvents().remove("gravity")
+		self.quitarVida()
+		self.animMorir(miraDerecha)
+		game.schedule(500, {game.removeTickEvent("anima")})
+		game.schedule(500,{juego.tickEvents().remove("anima")})
+
+
 		game.say(self, "Game Over")
 		if (juego.tickEvents().contains("tiempo")) {
 			game.removeTickEvent("tiempo")
 			juego.tickEvents().remove("tiempo")
 		}
 		game.schedule(1000, { game.say(self, "Apreta R para reiniciar")})
-		vivo = false
+		
 	}
+	
+	method morir2() {
+		self.quitarVida()
+		self.animMorir(miraDerecha)
+		game.schedule(500, {game.removeTickEvent("anima")})
+		game.schedule(500,{juego.tickEvents().remove("anima")})
+
+		game.schedule(500,{game.say(self, "Game Over")})
+		if (juego.tickEvents().contains("tiempo")) {
+			game.removeTickEvent("tiempo")
+			juego.tickEvents().remove("tiempo")
+		}
+		game.schedule(1000, { game.say(self, "Apreta R para reiniciar")})
+		
+	}
+	
+	method quitarVida(){
+	vivo = false}
 
 	method animMorir(direccion) {
 		if (direccion) { // TODO
-			self.cambiarAnimate(muere_right, 100)
+			self.cambiarAnimate(muere_right, 125)
 		} else {
-			self.cambiarAnimate(muere_left, 100)
+			self.cambiarAnimate(muere_left, 125)
 		}
 	}
 
@@ -384,7 +391,7 @@ object player {
 		self.transportar(self.posicionInicial())
 		tieneEspada = false
 		sprites = idle_right
-			// game.onTick(250 / 3, "gravity", { self.caer()})
+		anim_time = 200
 		self.aplicarAnimate()
 		vivo = true
 	}
@@ -406,7 +413,7 @@ class Player_hitbox {
 
 	var property position
 
-	method image() = "sword2.png" // cambiar imagen
+	method image() = "pixel.png" 
 
 	method chocar() {
 	}

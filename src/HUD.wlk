@@ -10,6 +10,15 @@ object gameOver {
 
 }
 
+class NombreNivel{
+	
+	const property image
+	
+	method position() = game.at(6,20)
+	
+}
+
+
 object vida {
 
 	const imagenes = [ "hearts0.png", "hearts1.png", "hearts2.png", "hearts3.png", "hearts4.png", "hearts5.png", "hearts6.png" ]
@@ -43,7 +52,7 @@ object monedaHUD {
 
 object contadorMonedas {
 
-	method text() = juego.monedas().toString() + "/ 6"
+	method text() = juego.monedas().toString() + "/ " + juego.objetivoMonedas()
 
 	method position() = game.at(2, juego.tamanho() * (9 / 10) - 3)
 
@@ -51,7 +60,7 @@ object contadorMonedas {
 
 object reloj {
 
-	var property segundo = 500
+	
 	var tiempo = 100
 
 	method text() = tiempo.roundUp().toString()
@@ -59,7 +68,7 @@ object reloj {
 	method position() = game.at(juego.tamanho() / 2, game.height() - juego.tamanho() / 10)
 
 	method pasarTiempo() {
-		tiempo = tiempo - segundo / 2000
+		tiempo = tiempo - 0.3
 		if (tiempo < 0) {
 			player.morir()
 		}
@@ -69,7 +78,7 @@ object reloj {
 
 	method iniciar() {
 		tiempo = 100
-		game.onTick(segundo / 2, "tiempo", { self.pasarTiempo()})
+		game.onTick(300, "tiempo", { self.pasarTiempo()})
 		juego.tickEvents().add("tiempo")
 	}
 
@@ -97,6 +106,7 @@ object iconoEspada {
 
 	method detener() {
 		game.removeVisual(self)
+		juego.visuals().remove(self)
 	}
 
 }

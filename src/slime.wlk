@@ -132,9 +132,3 @@ class Slime {
 
 }
 
-const slime1 = new Slime(position = game.at(15, (2 / 5) * juego.tamanho() + 1), izquierda = 9, derecha = 22, animName = "animSlime1", moveTickName = "moveSlime1")
-
-const slime2 = new Slime(position = game.at(30, (2 / 5) * juego.tamanho() + 1), izquierda = 26, derecha = 33, animName = "animSlime2", moveTickName = "moveSlime2")
-
-const slime3 = new Slime(position = game.at(30, (3 / 5) * juego.tamanho() + 1), izquierda = 25, derecha = 35, animName = "animSlime3", moveTickName = "moveSlime3")
-

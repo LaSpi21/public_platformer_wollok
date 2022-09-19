@@ -7,26 +7,30 @@ import plataformas.*
 import moneda.*
 import teletransportadores.*
 import puerta.*
+import niveles.*
 
 object juego {
 
 	const property tamanho = 40
-	const objetos = [ vida, reloj, espada, slime1, slime2, slime3, monedaHUD, moneda1, moneda2, moneda3, moneda4, moneda5, tp1, r1, tp2, r2, tp3, r3, tp4, r4, ataque, contadorMonedas, puerta, player]
-	const animables = [player, reloj, vida, slime1, slime2, slime3, iconoEspada] 
-	const reInstanciables = [slime1, slime2, slime3, moneda1, moneda2, moneda3, moneda4, moneda5, espada]
+	const property objetos = []
+	const property animables = []
+	const property reInstanciables = []
 	const property tickEvents = []
 	const property visuals = []
 	var property monedas = 0
+	var property objetivoMonedas = 6
+	var property dropCoin = []
+	var property nivel = 0
 	
-	var property dropCoin = [true, false, false]
+	
+	
 	
 	method configurar() {
 		game.width(tamanho)
 		game.height(tamanho)
 		game.cellSize(12)
 		game.title("platformero")
-		objetos.forEach({ unObjeto => game.addVisual(unObjeto)})
-		objetos.forEach({ unObjeto => visuals.add(unObjeto)})
+
 		keyboard.space().onPressDo{ self.saltar()}
 		keyboard.right().onPressDo{ self.caminar(true)}
 		keyboard.left().onPressDo{ self.caminar(false)}
@@ -34,22 +38,44 @@ object juego {
 		keyboard.q().onPressDo{ player.atacar1()}
 		keyboard.w().onPressDo{ player.atacar2()}
 		keyboard.e().onPressDo{ player.atacar3()}
-		keyboard.p().onPressDo{ player.mostrarPosicion()} // MOTIVOS DE PRUEBAS
-		keyboard.k().onPressDo{ player.bajarSalud(1)} // MOTIVOS DE PRUEBAS
-		keyboard.l().onPressDo{ player.subirSalud(1)} // MOTIVOS DE PRUEBAS
-		keyboard.x().onPressDo{ console.println(tickEvents)} // MOTIVOS DE PRUEBAS
+		//keyboard.p().onPressDo{ player.mostrarPosicion()} // MOTIVOS DE PRUEBAS
+		//keyboard.k().onPressDo{ player.bajarSalud(1)} // MOTIVOS DE PRUEBAS
+		//keyboard.l().onPressDo{ player.subirSalud(1)} // MOTIVOS DE PRUEBAS
+		//keyboard.x().onPressDo{ console.println(tickEvents)} // MOTIVOS DE PRUEBAS
 		keyboard.c().onPressDo{ console.println(visuals)} // MOTIVOS DE PRUEBAS
+		keyboard.g().onPressDo{ self.ganar()} // MOTIVOS DE PRUEBAS
 	}
 
 	method obtenerMoneda(){
 		monedas += 1
-		if (monedas == 6){
+		if (monedas == objetivoMonedas){
 			puerta.abrirPuerta()
 		}
 	}
 	
 	method ganar(){
+		player.quitarVida()
+		puerta.cerrarPuerta()
+
 		game.say(player, "Yo ya gané")
+		nivel = 1
+		self.cambiarNivel()
+		
+	}
+	
+	method cambiarNivel() {
+		animables.forEach({ unObjeto => self.detener(unObjeto)})
+		visuals.forEach({ unObjeto => game.removeVisual(unObjeto)})
+		objetos.clear()
+		visuals.clear()
+		animables.clear()
+		reInstanciables.clear()
+		monedas = 0
+		
+		selectorNiveles.listaNiveles().get(nivel).cargar()
+		self.iniciar()
+		player_hit.cargar()
+		
 	}
 	
 	method iniciar() {
@@ -74,7 +100,7 @@ object juego {
 			self.terminar()
 		}
 		monedas = 0
-		dropCoin = [true, false, false]
+		dropCoin = selectorNiveles.listaNiveles().get(nivel).rng()
 		puerta.cerrarPuerta()
 		self.iniciar()
 	}
